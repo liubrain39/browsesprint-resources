@@ -1,0 +1,7 @@
+approach,run,public_page,outcome,session_state,total_seconds,success,tool_calls,retries,navigation_seconds,extraction_seconds,decision_seconds,timeout_seconds,notes
+baseline,1,,,cold_or_reused,,,,,,,,,
+baseline,2,,,cold_or_reused,,,,,,,,,
+baseline,3,,,cold_or_reused,,,,,,,,,
+changed,1,,,cold_or_reused,,,,,,,,,
+changed,2,,,cold_or_reused,,,,,,,,,
+changed,3,,,cold_or_reused,,,,,,,,,
