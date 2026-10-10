@@ -1,0 +1,77 @@
+{
+  "stage": "live-example-verified",
+  "executed_at_utc": "2026-10-10T16:03:42.514369+00:00",
+  "packages": {
+    "@crawlee/cheerio": "3.18.2",
+    "@crawlee/core": "3.18.2"
+  },
+  "runtime": "v22.16.0",
+  "requests_total_across_cases": 2,
+  "target_is_project_owned": true,
+  "runs": [
+    {
+      "case": "matched",
+      "process_exit_code": 0,
+      "result": {
+        "capturedAtUtc": "2026-10-10T16:03:38.538Z",
+        "runtime": "v22.16.0",
+        "examplePackageVersion": "3.18.2",
+        "expectedTitleFragment": "Codex",
+        "requestsFinished": 1,
+        "requestsFailed": 0,
+        "rowsProduced": 1,
+        "contentChecksPassed": 1,
+        "contentChecksFailed": 0,
+        "outcomePassed": true,
+        "rows": [
+          {
+            "requestedUrl": "https://codexbrowse.site/codex-browser-slow",
+            "loadedUrl": "https://codexbrowse.site/codex-browser-slow",
+            "httpStatus": 200,
+            "title": "Why Is Codex Browsing Slow? A Measurement Guide — BrowseSprint",
+            "sameOrigin": true,
+            "titleMatches": true,
+            "contentGatePassed": true
+          }
+        ],
+        "failedRequests": [],
+        "scope": "One HTTP HTML title check; no JavaScript, browser interaction, form submission, delivery check or performance comparison."
+      }
+    },
+    {
+      "case": "intentional_title_mismatch",
+      "process_exit_code": 1,
+      "result": {
+        "capturedAtUtc": "2026-10-10T16:03:41.492Z",
+        "runtime": "v22.16.0",
+        "examplePackageVersion": "3.18.2",
+        "expectedTitleFragment": "INTENTIONALLY_WRONG_BROWSESPRINT_TITLE",
+        "requestsFinished": 1,
+        "requestsFailed": 0,
+        "rowsProduced": 1,
+        "contentChecksPassed": 0,
+        "contentChecksFailed": 1,
+        "outcomePassed": false,
+        "rows": [
+          {
+            "requestedUrl": "https://codexbrowse.site/codex-browser-slow",
+            "loadedUrl": "https://codexbrowse.site/codex-browser-slow",
+            "httpStatus": 200,
+            "title": "Why Is Codex Browsing Slow? A Measurement Guide — BrowseSprint",
+            "sameOrigin": true,
+            "titleMatches": false,
+            "contentGatePassed": false
+          }
+        ],
+        "failedRequests": [],
+        "scope": "One HTTP HTML title check; no JavaScript, browser interaction, form submission, delivery check or performance comparison."
+      }
+    }
+  ],
+  "script_sha256": "d7fa0e0da64c2bfd790dba14191848f8c135aa819e5d86a24fc0b564ed91cf0b",
+  "negative_control": "Same public page fetched; deliberately wrong expected title fragment. Site is not claimed broken.",
+  "browser_or_llm_execution": false,
+  "performance_benchmark": false,
+  "verified_speed_gain": false,
+  "external_service_cost_usd": 0
+}

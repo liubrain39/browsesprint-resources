@@ -2,7 +2,7 @@
 
 Free, editable resources for checking a slow browser task before choosing a fix. These materials accompany [BrowseSprint](https://codexbrowse.site/), an independent research project.
 
-The current resources are a guide, a blank CSV, a comparison protocol and a local CSV-checking helper. There is no released extension, automatic timing service or verified speed improvement. BrowseSprint is not affiliated with OpenAI.
+The current resources are a guide, a blank CSV, a comparison protocol, a local CSV-checking helper and a small read-only Crawlee HTTP content-check example. There is no released extension, automatic timing service or verified speed improvement. BrowseSprint is not affiliated with OpenAI.
 
 [中文说明](README.zh-CN.md)
 
@@ -22,6 +22,7 @@ Six attempts are a small diagnostic exercise, not a universal benchmark. A faste
 | --- | --- |
 | [Blank timing CSV](browser-task-benchmark.csv) | Three baseline rows and three changed rows; no example timings or claimed results |
 | [Local worksheet checker](docs/worksheet-checker.md) | Runnable standard-library Python helper; keeps reported failures and unknowns separate; no automatic speedup claim |
+| [Executed Crawlee HTTP example](examples/crawlee-content-gate/README.md) | One public-page title gate with a real matched fetch and a deliberately wrong condition; no browser or speed comparison |
 | [Result-verification field notes](docs/browser-result-verification.md) | Real outcome checks and a reproducible public-HTML example; no timing results |
 | [Measurement protocol](docs/browser-task-protocol.md) | Success rules, comparability, column meanings and limits on conclusions |
 | [Comparison report template](comparison-report-template.md) | A short record of the setup, observations and remaining uncertainty |

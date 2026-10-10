@@ -1,0 +1,9 @@
+{
+  "name": "browsesprint-crawlee-receipt-example",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@crawlee/cheerio": "3.18.2",
+    "@crawlee/core": "3.18.2"
+  }
+}

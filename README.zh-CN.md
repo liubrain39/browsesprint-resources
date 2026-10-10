@@ -18,6 +18,7 @@
 
 - [空白计时 CSV](browser-task-benchmark.csv)：三行原方法、三行改动后方法，没有填入示例用时或测试结论。
 - [本地CSV检查脚本（英文说明）](docs/worksheet-checker.md)：可运行的Python标准库示例，分别保留成功标记、失败与未核验记录；不操作浏览器或自动生成提速结论。
+- [已执行的Crawlee HTTP示例（英文）](examples/crawlee-content-gate/README.md)：同一公开网页的正确标题条件和故意错误条件，区分请求完成与内容检查；未执行浏览器、LLM或提速对照。
 - [结果核验实例（英文）](docs/browser-result-verification.md)：三种实际核验情况和可复现的公开 HTML 检查，不含用时或提速结论。
 - [记录方法与字段说明（英文）](docs/browser-task-protocol.md)：成功标准、起始条件、字段含义和结论边界。
 - [对照报告模板（英文）](comparison-report-template.md)：记录设置、观察结果和仍不确定的内容。
