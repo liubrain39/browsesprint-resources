@@ -21,6 +21,7 @@ Six attempts are a small diagnostic exercise, not a universal benchmark. A faste
 | Resource | What it contains |
 | --- | --- |
 | [Blank timing CSV](browser-task-benchmark.csv) | Three baseline rows and three changed rows; no example timings or claimed results |
+| [Result-verification field notes](docs/browser-result-verification.md) | Real outcome checks and a reproducible public-HTML example; no timing results |
 | [Measurement protocol](docs/browser-task-protocol.md) | Success rules, comparability, column meanings and limits on conclusions |
 | [Comparison report template](comparison-report-template.md) | A short record of the setup, observations and remaining uncertainty |
 | [Public diagnostic guide](https://codexbrowse.site/codex-browser-slow) | The accompanying web guide, available without signup |
