@@ -1,0 +1,46 @@
+[
+  {
+    "case": "declared-title",
+    "exit_code": 0,
+    "report": {
+      "autogen_core_version": "0.7.5",
+      "python_version": "3.12.14",
+      "functiontool_returned": true,
+      "expected_title": "Why Is Codex Browsing Slow? A Measurement Guide — BrowseSprint",
+      "observation": {
+        "requested_url": "https://codexbrowse.site/codex-browser-slow",
+        "final_url": "https://codexbrowse.site/codex-browser-slow",
+        "http_status": 200,
+        "title_count": 1,
+        "title": "Why Is Codex Browsing Slow? A Measurement Guide — BrowseSprint",
+        "response_sha256": "32a64d9388fbe458920706e361281cdbcc6fe7077efe130841391e4cda7f4578"
+      },
+      "content_check_passed": true,
+      "model_calls": 0,
+      "browser_runs": 0,
+      "speedup_claim": null
+    }
+  },
+  {
+    "case": "intentionally-wrong-title",
+    "exit_code": 1,
+    "report": {
+      "autogen_core_version": "0.7.5",
+      "python_version": "3.12.14",
+      "functiontool_returned": true,
+      "expected_title": "INTENTIONALLY_WRONG_AUTOGEN_TITLE",
+      "observation": {
+        "requested_url": "https://codexbrowse.site/codex-browser-slow",
+        "final_url": "https://codexbrowse.site/codex-browser-slow",
+        "http_status": 200,
+        "title_count": 1,
+        "title": "Why Is Codex Browsing Slow? A Measurement Guide — BrowseSprint",
+        "response_sha256": "32a64d9388fbe458920706e361281cdbcc6fe7077efe130841391e4cda7f4578"
+      },
+      "content_check_passed": false,
+      "model_calls": 0,
+      "browser_runs": 0,
+      "speedup_claim": null
+    }
+  }
+]

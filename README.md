@@ -50,3 +50,8 @@ An issue is most useful when it includes the public task, the intended outcome, 
 The optional [research signup](https://codexbrowse.site/#research) is for research conversations or future tests. It is not access to an available extension. No release date is confirmed.
 
 These are maker-maintained resources. A repository listing is not independent validation of the project or of a performance claim.
+
+## Executed AutoGen FunctionTool example
+
+[Run a tool, then check the returned page title](examples/autogen-title-gate/README.md).
+Two direct autogen-core0.7.5 calls both returned HTTP200; the declared title passed and the intentionally wrong title failed the application predicate. The code, dependency lock and actual JSON are included. No browser, model or timing comparison was run. This example is for existing AutoGen users; AutoGen is in maintenance mode.
