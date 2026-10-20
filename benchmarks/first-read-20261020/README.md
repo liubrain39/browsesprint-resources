@@ -13,6 +13,11 @@ private BrowseSprint Reader package, Codex's internal native bridge, model
 inference, or a completed installer. It does not establish majority-user benefit.
 The code and analysis are AI-assisted and published by BrowseSprint's author.
 
+Protocol version 2 uses the runner's installed Google Chrome with its sandbox
+explicitly enabled. A blank-browser preflight must pass before any timed pages.
+The initial run's downloaded Chromium could not start its sandbox, so those
+browser setup failures are retained and are not website failures or speed data.
+
 Each attempt uses a fresh connection dispatcher or isolated browser. MCP and
 the browser initialize to `about:blank` before the first-site timer starts;
 that setup time is recorded separately. The browser tool disables automatic
@@ -33,8 +38,8 @@ in the data. HTTP 429 stops later attempts for that site; the site is not replac
 Raw page text is not written to the log: only titles, condition results, content
 hashes, timing and transport measurements are retained.
 
-Run `npm ci --ignore-scripts`, `npm test`, then install the pinned browser with
-`node node_modules/@playwright/mcp/cli.js install-browser chromium --with-deps`.
+Run `npm ci --ignore-scripts`, `npm test`, then set `BENCH_BROWSER` to an installed
+Google Chrome executable that supports sandboxing on the host.
 `npm run bench` performs the experiment. `BENCH_SMOKE=1` only checks that an owned
 blank browser can be controlled; it is not a webpage performance result.
 

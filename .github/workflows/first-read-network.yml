@@ -14,6 +14,8 @@ jobs:
   compare:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    env:
+      BENCH_BROWSER: /usr/bin/google-chrome
     defaults:
       run:
         working-directory: benchmarks/first-read-20261020
@@ -28,8 +30,11 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Check destination boundaries
         run: npm test
-      - name: Install owned Chromium in this disposable runner
-        run: node node_modules/@playwright/mcp/cli.js install-browser chromium --with-deps
+      - name: Check the runner-installed sandboxed Chrome
+        run: |
+          test -x /usr/bin/google-chrome
+          /usr/bin/google-chrome --version
+          BENCH_SMOKE=1 BENCH_OUT=smoke-evidence npm run bench
       - name: Read public pages and retain all outcomes in the log
         run: npm run bench
         env:

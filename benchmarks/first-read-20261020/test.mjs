@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {publicAddress,resolvePublic,link} from './link.mjs';
 import {contentChecks} from './cases.mjs';
+import {extractHtml,sameOriginRedirect} from './html.mjs';
 test('the public tunnel rejects private, shared, benchmark and documentation ranges',()=>{
  for(const ip of ['127.0.0.1','10.1.2.3','100.64.1.1','169.254.1.1','172.16.1.1','192.168.1.1','198.18.0.1','192.0.2.1','198.51.100.1','203.0.113.1','224.0.0.1','::1','not-an-ip'])assert.equal(publicAddress(ip),false,ip);
  assert.equal(publicAddress('1.1.1.1'),true);
@@ -19,4 +20,14 @@ test('checks require the title and all specified content, including table cells'
  assert.deepEqual(contentChecks(c,{title:'TITLE',text:'one\n two',tables:[[['THREE']]]}),{title:true,phrases:[{phrase:'one two',ok:true},{phrase:'three',ok:true}]});
  assert.equal(contentChecks(c,{title:'wrong',text:'one two'}).title,false);
  assert.equal(contentChecks(c,{title:'Title',text:'one two'}).phrases[1].ok,false);
+});
+test('older documents with HEADER and a separate BODY retain title and body',()=>{
+ const r=extractHtml('<HEADER><TITLE>Old page</TITLE></HEADER><BODY><h1>Public text</h1><p>Read the next section.</p><script>privateScriptText</script></BODY>');
+ assert.equal(r.title,'Old page');assert.match(r.text,/Public text/);assert.match(r.text,/next section/);assert.doesNotMatch(r.text,/privateScriptText/);
+});
+test('normal HTML extracts visible text and rejects redirected origins or schemes',()=>{
+ const r=extractHtml('<!doctype html><html><head><title>Normal page</title><style>hiddenCSS</style></head><body>Hello &amp; welcome</body></html>');
+ assert.equal(r.title,'Normal page');assert.match(r.text,/Hello & welcome/);assert.doesNotMatch(r.text,/hiddenCSS/);
+ assert.equal(sameOriginRedirect('https://example.org/about/','/about'),'https://example.org/about');
+ for(const location of ['http://example.org/','https://127.0.0.1/','https://other.example/','https://user:pass@example.org/'])assert.throws(()=>sameOriginRedirect('https://example.org/',location),/outside/);
 });

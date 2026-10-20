@@ -8,7 +8,7 @@ import {getServers} from 'node:dns';
 import {Client} from '@modelcontextprotocol/sdk/client/index.js';
 import {StdioClientTransport} from '@modelcontextprotocol/sdk/client/stdio.js';
 import {ProxyAgent} from 'undici';
-import {parseHTML} from 'linkedom';
+import {extractHtml,sameOriginRedirect} from './html.mjs';
 import {link} from './link.mjs';
 import {cases,relayEndpoint,contentChecks} from './cases.mjs';
 const require=createRequire(import.meta.url);
@@ -17,6 +17,7 @@ const executable=process.env.BENCH_BROWSER||createRequire(path.join(mcpRoot,'pac
 const out=process.env.BENCH_OUT||path.resolve('evidence');await fs.mkdir(out,{recursive:true});
 const sha=x=>createHash('sha256').update(x).digest('hex');
 const protocol={
+ version:2,browser:'Runner-installed Google Chrome, browser sandbox explicitly enabled; version recorded per read.',
  scope:'Independent machine network/component comparison, not the private Reader package, Codex internal bridge, model inference or complete installer experience.',
  cases,repetitions:2,subjects:['direct-html','hosted-reader','playwright-mcp'],
  profiles:{normal:{rate:null,connectDelayMs:0},slow:{rate:65536,connectDelayMs:200}},
@@ -33,10 +34,10 @@ function mcpValue(r){
 }
 async function browserClient(proxy){
  const client=new Client({name:'public-first-read-benchmark',version:'1.0.0'});
- const transport=new StdioClientTransport({command:process.execPath,args:[path.join(mcpRoot,'cli.js'),'--headless','--isolated','--executable-path',executable,'--proxy-server',proxy,'--snapshot-mode','none','--timeout-settle','0','--no-webmcp'],stderr:'pipe'});
+ const transport=new StdioClientTransport({command:process.execPath,args:[path.join(mcpRoot,'cli.js'),'--headless','--isolated','--sandbox','--executable-path',executable,'--proxy-server',proxy,'--snapshot-mode','none','--timeout-settle','0','--no-webmcp'],stderr:'pipe'});
  const started=performance.now();let stderr='';
- await client.connect(transport,{timeout:20000});transport.stderr?.on('data',b=>stderr+=b);
  try{
+  await client.connect(transport,{timeout:20000});transport.stderr?.on('data',b=>stderr+=b);
   const names=(await client.listTools()).tools.map(t=>t.name);if(!names.includes('browser_run_code_unsafe'))throw Error('Required native tool is missing; available: '+names.join(','));
   const ready=mcpValue(await client.callTool({name:'browser_run_code_unsafe',arguments:{code:'async (page) => ({url: page.url(), version: page.context().browser().version()})'}},undefined,{timeout:20000}));
   if(ready.url!=='about:blank')throw Error('The baseline must start on a blank page');
@@ -62,12 +63,20 @@ try{
 console.log('BROWSESPRINT_ENV_BASE64:'+gzipSync(Buffer.from(JSON.stringify({protocol,environment}))).toString('base64'));
 const rows=[],rateLimited=new Set();
 async function httpRead(url,options,dispatcher,signal){
- const start=performance.now(),r=await fetch(url,{...options,dispatcher,signal,redirect:'manual'});const headersMs=performance.now()-start;
+ const start=performance.now();let r,redirects=0,current=url;
+ for(;;){
+  r=await fetch(current,{...options,dispatcher,signal,redirect:'manual'});
+  if(![301,302,303,307,308].includes(r.status)||options.method==='POST')break;
+  const location=r.headers.get('location');await r.body?.cancel();
+  if(!location||redirects++>=3)throw Error('Redirect limit or missing location');
+  current=sameOriginRedirect(current,location);
+ }
+ const headersMs=performance.now()-start;
  if(r.status===429)throw Object.assign(Error('HTTP 429'),{status:429});
  if(r.status<200||r.status>=300){await r.body?.cancel();throw Object.assign(Error('HTTP '+r.status),{status:r.status});}
  let size=0;const chunks=[],bodyAt=performance.now();
  for await(const c of r.body){size+=c.length;if(size>2_000_000)throw Error('Response body limit');chunks.push(c);}
- return {response:r,body:Buffer.concat(chunks),timing:{headersMs,bodyMs:performance.now()-bodyAt,decodedBytes:size}};
+ return {response:r,body:Buffer.concat(chunks),timing:{headersMs,bodyMs:performance.now()-bodyAt,decodedBytes:size,redirects}};
 }
 async function attempt(c,subject,profile,rep){
  const row={site:c.site,url:c.url,subject,profile,rep,at:new Date().toISOString()};
@@ -100,9 +109,7 @@ async function attempt(c,subject,profile,rep){
     if(j.requestedUrl!==c.url)throw Error('Service requestedUrl mismatch');
     result=j.result;row.serverMs=j.serverMs;row.serverStats=result?.stats;row.fetchedAt=result?.fetchedAt;
    }else{
-    const parseAt=performance.now(),{document}=parseHTML(h.body.toString('utf8'));
-    document.querySelectorAll('script,style,noscript,template').forEach(e=>e.remove());
-    result={title:document.title,text:(document.body?.textContent||document.documentElement?.textContent||'').replace(/\s+/g,' ').trim()};
+    const parseAt=performance.now();result=extractHtml(h.body.toString('utf8'));
     row.parseMs=performance.now()-parseAt;
    }
   }
