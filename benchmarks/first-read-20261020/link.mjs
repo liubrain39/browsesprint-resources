@@ -10,24 +10,34 @@ export async function resolvePublic(host,resolve=lookup){
  if(!addresses.length||addresses.some(a=>!publicAddress(a.address)))throw Error('Non-public DNS destination rejected');
  return addresses[0].address;
 }
-// A local, test-owned CONNECT proxy. TLS remains end-to-end. All tunnels in an
-// attempt share the bandwidth allowance, including browser subresources.
-export async function link({slow=false,resolve=lookup}={}){
- const stats={rate:slow?65536:null,connectDelayMs:slow?200:0,up:0,down:0,connections:[],denied:[]};
- const sockets=new Set(),queues={up:[],down:[]},running={up:false,down:false},next={up:0,down:0};
- let closed=false;
+export function createPipeQueue({rate,stats,isClosed=()=>false}){
+ const queues={up:[],down:[]},running={up:false,down:false},next={up:0,down:0};
  async function pump(k){
   if(running[k])return;running[k]=true;
-  while(queues[k].length&&!closed){
-   const {s,d,b}=queues[k].shift();if(d.destroyed)continue;if(b===null){d.end();continue;}
-   const size=stats.rate?Math.min(2048,b.length):b.length,rest=b.subarray(size);
-   if(stats.rate){const wait=next[k]-performance.now();if(wait>0)await sleep(wait);next[k]=performance.now()+size*1000/stats.rate;}
-   if(closed||d.destroyed)continue;stats[k]+=size;
+  while(queues[k].length&&!isClosed()){
+   const item=queues[k].shift(),{s,d,b}=item;if(d.destroyed)continue;
+   if(b===null){
+    // EOF can arrive while a large TLS chunk is being split and delayed.
+    // Never let it overtake that socket's remaining bytes in the fair queue.
+    if(queues[k].some(p=>p.d===d&&p.b!==null)){queues[k].push(item);continue;}
+    d.end();continue;
+   }
+   const size=rate?Math.min(2048,b.length):b.length,rest=b.subarray(size);
+   if(rate){const wait=next[k]-performance.now();if(wait>0)await sleep(wait);next[k]=performance.now()+size*1000/rate;}
+   if(isClosed()||d.destroyed)continue;stats[k]+=size;
    if(rest.length)queues[k].push({s,d,b:rest});
    d.write(b.subarray(0,size),()=>{if(!rest.length&&!s.destroyed)s.resume();});
   }
   running[k]=false;
  }
+ return {push(k,item){queues[k].push(item);void pump(k);},clear(){queues.up.length=0;queues.down.length=0;}};
+}
+// A local, test-owned CONNECT proxy. TLS remains end-to-end. All tunnels in an
+// attempt share the bandwidth allowance, including browser subresources.
+export async function link({slow=false,resolve=lookup}={}){
+ const stats={rate:slow?65536:null,connectDelayMs:slow?200:0,up:0,down:0,connections:[],denied:[]};
+ const sockets=new Set();let closed=false;
+ const pipe=createPipeQueue({rate:stats.rate,stats,isClosed:()=>closed});
  const own=s=>{sockets.add(s);s.on('error',()=>s.destroy());s.once('close',()=>sockets.delete(s));return s;};
  const server=http.createServer((q,s)=>s.writeHead(405).end());
  server.on('connection',own);
@@ -46,11 +56,11 @@ export async function link({slow=false,resolve=lookup}={}){
    up.once('connect',()=>{
     row.tcpMs=performance.now()-connectAt;up.setTimeout(0);if(closed||c.destroyed){up.destroy();return;}
     c.write('HTTP/1.1 200 Connection Established\r\n\r\n');if(head.length)up.write(head);
-    for(const [s,d,k] of [[c,up,'up'],[up,c,'down']])s.on('data',b=>{s.pause();queues[k].push({s,d,b});void pump(k);});
-    up.on('end',()=>{queues.down.push({s:up,d:c,b:null});void pump('down');});
+    for(const [s,d,k] of [[c,up,'up'],[up,c,'down']])s.on('data',b=>{s.pause();pipe.push(k,{s,d,b});});
+    up.on('end',()=>pipe.push('down',{s:up,d:c,b:null}));
    });
   }catch(e){row.error=e.message;stats.denied.push(u.hostname);up?.destroy();c.end('HTTP/1.1 502 Bad Gateway\r\n\r\n');}
  });
  await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});
- return {url:'http://127.0.0.1:'+server.address().port,stats,async close(){closed=true;for(const s of sockets)s.destroy();queues.up.length=0;queues.down.length=0;await new Promise(r=>server.close(r));}};
+ return {url:'http://127.0.0.1:'+server.address().port,stats,async close(){closed=true;for(const s of sockets)s.destroy();pipe.clear();await new Promise(r=>server.close(r));}};
 }

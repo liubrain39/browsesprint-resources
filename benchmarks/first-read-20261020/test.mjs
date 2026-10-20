@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {publicAddress,resolvePublic,link} from './link.mjs';
+import {publicAddress,resolvePublic,link,createPipeQueue} from './link.mjs';
 import {contentChecks} from './cases.mjs';
 import {extractHtml,sameOriginRedirect} from './html.mjs';
 test('the public tunnel rejects private, shared, benchmark and documentation ranges',()=>{
@@ -36,4 +36,20 @@ test('leading text and nodes before a doctype do not break document queries',()=
   const r=extractHtml(prefix+'<!doctype html><html><head><title>Public page</title></head><body>Readable content</body></html>');
   assert.equal(r.title,'Public page');assert.match(r.text,/Readable content/);assert.doesNotMatch(r.text,/hiddenScript/);
  }
+});
+test('a delayed large chunk finishes before EOF even with another tunnel sharing the queue',async()=>{
+ const stats={up:0,down:0},pipe=createPipeQueue({rate:65536,stats});
+ const source={destroyed:false,resume(){}},payload=Buffer.alloc(20000,42),small=Buffer.from('other tunnel');
+ const chunks=[],other=[],events=[];
+ let finish,finishOther;
+ const done=new Promise(r=>finish=r),doneOther=new Promise(r=>finishOther=r);
+ const sink={destroyed:false,write(b,cb){assert.equal(this.destroyed,false);chunks.push(Buffer.from(b));cb();},end(){events.push('end');this.destroyed=true;finish();}};
+ const sinkOther={destroyed:false,write(b,cb){other.push(Buffer.from(b));cb();},end(){this.destroyed=true;finishOther();}};
+ pipe.push('down',{s:source,d:sink,b:payload});
+ pipe.push('down',{s:source,d:sinkOther,b:small});
+ pipe.push('down',{s:source,d:sink,b:null});
+ pipe.push('down',{s:source,d:sinkOther,b:null});
+ await Promise.all([done,doneOther]);
+ assert.deepEqual(Buffer.concat(chunks),payload);assert.deepEqual(Buffer.concat(other),small);
+ assert.deepEqual(events,['end']);assert.equal(stats.down,payload.length+small.length);
 });
