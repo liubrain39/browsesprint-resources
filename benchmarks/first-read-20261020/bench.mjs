@@ -17,7 +17,7 @@ const executable=process.env.BENCH_BROWSER||createRequire(path.join(mcpRoot,'pac
 const out=process.env.BENCH_OUT||path.resolve('evidence');await fs.mkdir(out,{recursive:true});
 const sha=x=>createHash('sha256').update(x).digest('hex');
 const protocol={
- version:2,browser:'Runner-installed Google Chrome, browser sandbox explicitly enabled; version recorded per read.',
+ version:3,browser:'Runner-installed Google Chrome, browser sandbox explicitly enabled; version recorded per read.',
  scope:'Independent machine network/component comparison, not the private Reader package, Codex internal bridge, model inference or complete installer experience.',
  cases,repetitions:2,subjects:['direct-html','hosted-reader','playwright-mcp'],
  profiles:{normal:{rate:null,connectDelayMs:0},slow:{rate:65536,connectDelayMs:200}},

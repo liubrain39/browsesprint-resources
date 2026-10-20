@@ -31,3 +31,9 @@ test('normal HTML extracts visible text and rejects redirected origins or scheme
  assert.equal(sameOriginRedirect('https://example.org/about/','/about'),'https://example.org/about');
  for(const location of ['http://example.org/','https://127.0.0.1/','https://other.example/','https://user:pass@example.org/'])assert.throws(()=>sameOriginRedirect('https://example.org/',location),/outside/);
 });
+test('leading text and nodes before a doctype do not break document queries',()=>{
+ for(const prefix of ['\n','<!-- Public page -->\n<script>hiddenScript</script>\n']){
+  const r=extractHtml(prefix+'<!doctype html><html><head><title>Public page</title></head><body>Readable content</body></html>');
+  assert.equal(r.title,'Public page');assert.match(r.text,/Readable content/);assert.doesNotMatch(r.text,/hiddenScript/);
+ }
+});

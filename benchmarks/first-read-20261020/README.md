@@ -13,10 +13,14 @@ private BrowseSprint Reader package, Codex's internal native bridge, model
 inference, or a completed installer. It does not establish majority-user benefit.
 The code and analysis are AI-assisted and published by BrowseSprint's author.
 
-Protocol version 2 uses the runner's installed Google Chrome with its sandbox
+Protocol version 3 uses the runner's installed Google Chrome with its sandbox
 explicitly enabled. A blank-browser preflight must pass before any timed pages.
 The initial run's downloaded Chromium could not start its sandbox, so those
 browser setup failures are retained and are not website failures or speed data.
+The second run exposed a fragment-parser query failure on five real documents.
+Version 3 parses the complete document and reads all top-level roots; all eight
+frozen publisher documents passed the local extraction preflight. The earlier
+failed rows are retained separately, and are not evidence of publisher failures.
 
 Each attempt uses a fresh connection dispatcher or isolated browser. MCP and
 the browser initialize to `about:blank` before the first-site timer starts;
