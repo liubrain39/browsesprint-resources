@@ -1,0 +1,30 @@
+name: Public transport phase probe
+on:
+  push:
+    branches: [codex/public-transport-20261020]
+    paths:
+      - benchmarks/public-transport-20261020/**
+      - .github/workflows/public-transport-probe.yml
+permissions:
+  contents: read
+concurrency:
+  group: browsesprint-public-transport-20261020
+  cancel-in-progress: false
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    env:
+      PROBE_LABEL: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Validate public diagnostic parser
+        run: python3 benchmarks/public-transport-20261020/probe.py --self-test
+      - name: Measure public HTTP transport phases
+        run: python3 benchmarks/public-transport-20261020/probe.py
