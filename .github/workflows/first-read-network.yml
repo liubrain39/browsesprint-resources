@@ -1,0 +1,36 @@
+name: Public first-read network comparison
+on:
+  push:
+    branches: [codex/first-read-network-20261020]
+    paths:
+      - benchmarks/first-read-20261020/**
+      - .github/workflows/first-read-network.yml
+permissions:
+  contents: read
+concurrency:
+  group: browsesprint-first-read-network-20261020
+  cancel-in-progress: false
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: benchmarks/first-read-20261020
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.23.3
+      - name: Install pinned public benchmark dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Check destination boundaries
+        run: npm test
+      - name: Install owned Chromium in this disposable runner
+        run: node node_modules/@playwright/mcp/cli.js install-browser chromium --with-deps
+      - name: Read public pages and retain all outcomes in the log
+        run: npm run bench
+        env:
+          CI: "true"

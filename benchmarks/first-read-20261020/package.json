@@ -1,0 +1,13 @@
+{
+  "name": "browsesprint-public-first-read-benchmark",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"test": "node --test test.mjs", "bench": "node bench.mjs"},
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "@playwright/mcp": "0.0.83",
+    "linkedom": "0.18.12",
+    "undici": "7.30.1"
+  }
+}
