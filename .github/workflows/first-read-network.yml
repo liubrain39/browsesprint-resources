@@ -3,7 +3,7 @@ on:
   push:
     branches: [codex/first-read-network-20261020]
     paths:
-      - benchmarks/redirect-reuse-20261020/**
+      - benchmarks/redirect-drain-20261020/**
       - .github/workflows/first-read-network.yml
 permissions:
   contents: read
@@ -18,7 +18,7 @@ jobs:
       BENCH_BROWSER: /usr/bin/google-chrome
     defaults:
       run:
-        working-directory: benchmarks/redirect-reuse-20261020
+        working-directory: benchmarks/redirect-drain-20261020
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -35,7 +35,7 @@ jobs:
       - name: Decrypt the one-run private test package
         run: node decrypt.mjs
         env:
-          BROWSESPRINT_BENCH_KEY: ${{ secrets.BROWSESPRINT_REDIRECT_REUSE_20261020 }}
+          BROWSESPRINT_BENCH_KEY: ${{ secrets.BROWSESPRINT_REDIRECT_DRAIN_20261020 }}
       - name: Complete client and settled browser comparison
         run: node launch.mjs
       - name: Remove decrypted code and temporary results
